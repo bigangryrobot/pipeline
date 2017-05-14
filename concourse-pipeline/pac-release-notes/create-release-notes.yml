@@ -1,0 +1,28 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source: {repository: sharor/pac}
+
+inputs:
+- name: repository
+
+outputs:
+  - name: release-notes
+
+run:
+  path: sh
+  args:
+  - -exc
+  - |
+    ls
+    buildpath="$(pwd ./release-notes)"
+    cp -r repository /
+    cp -r repository/concourse-pipeline/pac-release-notes/templates /
+    cp /repository/concourse-pipeline/pac-release-notes/pac_settings.yml /usr/src/app
+    cd /usr/src/app
+    ruby pac.rb from-latest-tag "rel_*" --settings=./pac_settings.yml
+    cd $buildpath
+    cp /repository/concourse-pipeline/pac-release-notes/Dockerfile ./release-notes
+    cp /usr/src/app/default-generated.html ./release-notes/index.html
+
